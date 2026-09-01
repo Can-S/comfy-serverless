@@ -1,7 +1,6 @@
-# 1. Temel İmaj: RunPod'un resmi, boş ComfyUI şablonu (Sadece comfy-cli ve temel araçlar var)
+# 1. Temel İmaj: RunPod'un resmi, boş ComfyUI şablonu
 FROM runpod/worker-comfyui:8.4.0-base
 
-# 2. İşletim Sistemi Seviyesi: Root yetkisiyle Blender ve diğer gerekli araçları kuruyoruz
 USER root
 RUN apt-get update && apt-get install -y \
     blender \
@@ -11,24 +10,27 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Python Bağımlılıkları: RunPod ve API istekleri için gerekli kütüphaneler
 RUN pip install runpod huggingface_hub requests
 
-# 4. ComfyUI Eklentileri (Custom Nodes): Projede kullandığımız tüm düğümler
-# Not: Yüz koruma (IP-Adapter) eklentisini de şimdiden kuruyoruz.
+# ComfyUI'ın en güncel sürümüne geçiyoruz (SCAIL-2 Subgraph desteği için PR#14373 gerekli)
+WORKDIR /comfyui
+RUN git pull origin master
+
+# Klasik eklentilerimiz
 RUN comfy-node-install \
     ComfyUI-AnimateDiff-Evolved \
     ComfyUI-VideoHelperSuite \
     comfyui_controlnet_aux \
     ComfyUI_IPAdapter_plus
 
-# 5. Kendi yazdığımız dosyaları imaja kopyalıyoruz
+# WanVideo ve SCAIL-2 eklentilerini (Kijai Wrapper) manuel olarak kuruyoruz
+WORKDIR /comfyui/custom_nodes
+RUN git clone https://github.com/Kijai/ComfyUI-WanVideoWrapper.git || true
+# Gerekirse diğer SCAIL-2/SAM3 node'ları buraya eklenebilir
+
+WORKDIR /
 COPY src/blender_extract.py /blender_extract.py
 COPY src/handler.py /handler.py
 COPY src/workflow_api.json /workflow_api.json
 
-# 6. Çalışma dizinini ayarlıyoruz
-WORKDIR /
-
-# 7. Sunucu uyandığında (Cold Start) çalışacak ana kodumuzu belirliyoruz
 CMD ["python3", "-u", "/handler.py"]
