@@ -1,5 +1,5 @@
 # 1. Temel İmaj: RunPod'un resmi, boş ComfyUI şablonu
-FROM runpod/worker-comfyui:8.4.0-base
+FROM runpod/worker-comfyui:5.9.0-base
 
 USER root
 RUN apt-get update && apt-get install -y \
