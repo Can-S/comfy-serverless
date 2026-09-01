@@ -15,6 +15,8 @@ RUN pip install runpod huggingface_hub requests
 # ComfyUI'ın en güncel sürümüne geçiyoruz (SCAIL-2 Subgraph desteği için PR#14373 gerekli)
 WORKDIR /comfyui
 RUN git pull origin master
+# Güncel ComfyUI'ın bağımlılıklarını (özellikle comfy-kitchen) zorla güncelliyoruz:
+RUN pip install --upgrade -r requirements.txt
 
 # Klasik eklentilerimiz
 RUN comfy-node-install \
@@ -26,6 +28,8 @@ RUN comfy-node-install \
 # WanVideo ve SCAIL-2 eklentilerini (Kijai Wrapper) manuel olarak kuruyoruz
 WORKDIR /comfyui/custom_nodes
 RUN git clone https://github.com/Kijai/ComfyUI-WanVideoWrapper.git || true
+WORKDIR /comfyui/custom_nodes/ComfyUI-WanVideoWrapper
+RUN pip install -r requirements.txt || true
 # Gerekirse diğer SCAIL-2/SAM3 node'ları buraya eklenebilir
 
 WORKDIR /
