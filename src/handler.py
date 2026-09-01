@@ -7,6 +7,7 @@ import urllib.request
 import time
 
 import socket
+import sys
 
 # --- AYARLAR ---
 COMFYUI_API_URL = "http://127.0.0.1:8188/prompt"
@@ -16,18 +17,21 @@ VOLUME_DIR = "/runpod-volume/models"
 
 def start_comfyui():
     print("Sistem: ComfyUI sunucusu başlatılıyor...")
-    # ComfyUI'ı arka planda başlat
-    subprocess.Popen(["python3", "main.py", "--listen", "127.0.0.1", "--port", "8188"], cwd="/comfyui")
+    # ComfyUI'ı arka planda başlat (Logları RunPod paneline yansıtmak için stdout ve stderr'i yönlendiriyoruz)
+    subprocess.Popen([sys.executable, "main.py", "--listen", "127.0.0.1", "--port", "8188"], 
+                     cwd="/comfyui", 
+                     stdout=sys.stdout, 
+                     stderr=sys.stderr)
     
-    # Sunucu ayağa kalkana kadar (port 8188 açılana kadar) bekle
-    for _ in range(60):
+    # Sunucu ayağa kalkana kadar bekle
+    for _ in range(120):
         try:
             with socket.create_connection(("127.0.0.1", 8188), timeout=1):
                 print("Sistem: ComfyUI sunucusu hazır!")
                 return
         except OSError:
             time.sleep(1)
-    print("HATA: ComfyUI sunucusu başlatılamadı!")
+    print("HATA: ComfyUI sunucusu başlatılamadı! (Zaman aşımı)")
 
 start_comfyui()
 
