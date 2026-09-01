@@ -6,11 +6,30 @@ import base64
 import urllib.request
 import time
 
+import socket
+
 # --- AYARLAR ---
 COMFYUI_API_URL = "http://127.0.0.1:8188/prompt"
 COMFYUI_OUTPUT_DIR = "/comfyui/output"
 COMFYUI_INPUT_DIR = "/comfyui/input"
 VOLUME_DIR = "/runpod-volume/models"
+
+def start_comfyui():
+    print("Sistem: ComfyUI sunucusu başlatılıyor...")
+    # ComfyUI'ı arka planda başlat
+    subprocess.Popen(["python3", "main.py", "--listen", "127.0.0.1", "--port", "8188"], cwd="/comfyui")
+    
+    # Sunucu ayağa kalkana kadar (port 8188 açılana kadar) bekle
+    for _ in range(60):
+        try:
+            with socket.create_connection(("127.0.0.1", 8188), timeout=1):
+                print("Sistem: ComfyUI sunucusu hazır!")
+                return
+        except OSError:
+            time.sleep(1)
+    print("HATA: ComfyUI sunucusu başlatılamadı!")
+
+start_comfyui()
 
 # Devasa Model Kütüphanesi (JSON'daki isimler ve URL'ler)
 MODELS_TO_DOWNLOAD = {
