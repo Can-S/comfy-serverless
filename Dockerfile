@@ -14,8 +14,11 @@ RUN git clone https://github.com/Kijai/ComfyUI-WanVideoWrapper.git && \
     cd ComfyUI-WanVideoWrapper && \
     pip install -r requirements.txt || true
 
-# Workflow JSON ve handler'ı imajın içine göm
+# Model yollarını Ağ Diskine yönlendir
 WORKDIR /
+COPY extra_model_paths.yaml /comfyui/extra_model_paths.yaml
+
+# Workflow JSON ve handler'ı imajın içine göm
 COPY test/video_wan21_scail2_character_replacement.json /workflow.json
 COPY src/handler.py /handler.py
 
